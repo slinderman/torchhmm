@@ -11,7 +11,7 @@ class HMMNormalizer(Function):
     def forward(ctx, log_pi0, log_As, log_likes):
         T, K = log_likes.shape
         alphas = np.zeros((T, K), dtype=np.float32)
-        to_numpy = lambda arr: arr.numpy() if not arr.is_cuda else arr.cpu().numpy()
+        to_numpy = lambda arr: arr.data.numpy() if not arr.is_cuda else arr.cpu().data.numpy()
         
         Z = hmm.forward_pass(to_numpy(log_pi0), to_numpy(log_As), to_numpy(log_likes), alphas)
         ctx.save_for_backward(log_As)
@@ -20,7 +20,7 @@ class HMMNormalizer(Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        to_numpy = lambda arr: arr.numpy() if not arr.is_cuda else arr.cpu().numpy()
+        to_numpy = lambda arr: arr.data.numpy() if not arr.is_cuda else arr.cpu().data.numpy()
         log_As = to_numpy(ctx.saved_tensors[0])
         alphas = ctx.alphas
         T, K = alphas.shape
